@@ -5,9 +5,9 @@ cache.class.php
 ###############################################################################
 
 AXELS CONTENT CACHE CLASS
-V2.3
+V2.4
 
-http://www.axel-hahn.de/php_contentcache
+https://www.axel-hahn.de/docs/ahcache/index.htm
 License: GNU/GPL v3
 
 --------------------------------------------------------------------------------

@@ -40,7 +40,7 @@
  * --------------------------------------------------------------------------------<br>
  * @version 2.4
  * @author Axel Hahn
- * @link http://www.axel-hahn.de/php_contentcache
+ * @link https://www.axel-hahn.de/docs/ahcache/index.htm
  * @license GPL
  * @license http://www.gnu.org/licenses/gpl-3.0.html GPL 3.0
  * @package Axels Cache
