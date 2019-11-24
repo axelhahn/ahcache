@@ -38,6 +38,7 @@
  *                  - added remove file to make complete cache of a module invalid<br>
  *                  - rename var in cache.class_config.php to "$this->_sCacheDirDivider"<br>
  * --------------------------------------------------------------------------------<br>
+ * @version 2.4
  * @author Axel Hahn
  * @link http://www.axel-hahn.de/php_contentcache
  * @license GPL
