@@ -23,6 +23,9 @@ License: GNU/GPL v3
                  - _cleanup checks with file_exists
 2014-03-31  2.3  - added _setup() that to includes custom settings
                  - limit number of files in cache directory
+2019-11-24  2.4  - added getCachedItems() to get a filtered list of cache files
+                 - added remove file to make complete cache of a module invalid
+				 - rename var in cache.class_config.php to "$this->_sCacheDirDivider"
 
 ###############################################################################
 
