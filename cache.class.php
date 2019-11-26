@@ -37,8 +37,10 @@
  * 2019-11-24  2.4  - added getCachedItems() to get a filtered list of cache files<br>
  *                  - added remove file to make complete cache of a module invalid<br>
  *                  - rename var in cache.class_config.php to "$this->_sCacheDirDivider"<br>
+ * 2019-11-26  2.5  - added getModules() to get a list of existing modules that stored<br>
+ *                    a cached item<br>
  * --------------------------------------------------------------------------------<br>
- * @version 2.4
+ * @version 2.5
  * @author Axel Hahn
  * @link https://www.axel-hahn.de/docs/ahcache/index.htm
  * @license GPL
@@ -288,6 +290,7 @@ class AhCache {
         return true;
     }
 
+    // ----------------------------------------------------------------------
     /**
      * get an array with cached data elements
      * @since 2.4
@@ -365,6 +368,23 @@ class AhCache {
         }
         return $aReturn;
 
+    }
+
+    // ----------------------------------------------------------------------
+    /**
+     * get a flat array of module names that saved a cache item already
+     * @since 2.5
+     * 
+     * @return array
+     */
+    public function getModules(){
+        $aReturn=array();
+        foreach(glob($this->_sCacheDir.'/*') as $sEntry){
+            if (is_dir($sEntry)){
+                $aReturn[]=basename($sEntry);
+            }
+        }
+        return $aReturn;
     }
 
     // ----------------------------------------------------------------------

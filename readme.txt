@@ -5,9 +5,9 @@ cache.class.php
 ###############################################################################
 
 AXELS CONTENT CACHE CLASS
-V2.4
+V2.5
 
-https://www.axel-hahn.de/docs/ahcache/index.htm
+DOCS: https://www.axel-hahn.de/docs/ahcache/index.htm
 License: GNU/GPL v3
 
 --------------------------------------------------------------------------------
@@ -25,8 +25,9 @@ License: GNU/GPL v3
                  - limit number of files in cache directory
 2019-11-24  2.4  - added getCachedItems() to get a filtered list of cache files
                  - added remove file to make complete cache of a module invalid
-				 - rename var in cache.class_config.php to "$this->_sCacheDirDivider"
-
+                 - rename var in cache.class_config.php to "$this->_sCacheDirDivider"
+2019-11-26  2.5  - added getModules() to get a list of existing modules that stored
+                   a cached item
 ###############################################################################
 
 --- typical usage:
