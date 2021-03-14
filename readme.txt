@@ -28,6 +28,9 @@ License: GNU/GPL v3
                  - rename var in cache.class_config.php to "$this->_sCacheDirDivider"
 2019-11-26  2.5  - added getModules() to get a list of existing modules that stored
                    a cached item
+2019-11-xx  2.7  - class was moved to folder src
+                 - added admin webgui
+                 - method getCachedItems - fix filter lifetime_greater
 ###############################################################################
 
 --- typical usage:
