@@ -31,6 +31,15 @@ License: GNU/GPL v3
 2019-11-xx  2.7  - class was moved to folder src
                  - added admin webgui
                  - method getCachedItems - fix filter lifetime_greater
+2021-09-28  2.6  added a simple admin UI; the cache class got a few new methods
+                 - update: cleanup() now always deletes expired items
+                 - update: dump() styles output as table
+                 - added: getCurrentModule 
+                 - added: deleteModule 
+                 - added: loadCachefile
+                 - added: removefileDelete
+                 - added: setCacheId
+                 - added: setModule
 ###############################################################################
 
 --- typical usage:
