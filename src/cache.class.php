@@ -220,9 +220,8 @@ class AhCache {
      * @return array|boolean
      */
     private function _readCacheItem($sFile) {
-         $sFull=$this->_sCacheDir.'/'.$sFile;
-         if (file_exists($sFull)) {
-             return unserialize(file_get_contents($sFull));
+         if (file_exists($sFile)) {
+             return unserialize(file_get_contents($sFile));
          }
 		 return false;
     }
