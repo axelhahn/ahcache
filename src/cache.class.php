@@ -1,3 +1,4 @@
+
 <?php
 /** 
  * --------------------------------------------------------------------------------<br>
@@ -48,6 +49,7 @@
  *                  - added: removefileDelete
  *                  - added: setCacheId
  *                  - added: setModule
+ * 2021-09-30  2.7  FIX: remove chdir() in _readCacheItem()
  * --------------------------------------------------------------------------------<br>
  * @version 2.6
  * @author Axel Hahn
@@ -218,11 +220,11 @@ class AhCache {
      * @return array|boolean
      */
     private function _readCacheItem($sFile) {
-        chdir($this->_sCacheDir);
-        if (file_exists($sFile)) {
-            return unserialize(file_get_contents($sFile));
-        }
-        return false;
+         $sFull=$this->_sCacheDir.'/'.$sFile;
+         if (file_exists($sFull)) {
+             return unserialize(file_get_contents($sFull));
+         }
+		 return false;
     }
 
     // ----------------------------------------------------------------------
