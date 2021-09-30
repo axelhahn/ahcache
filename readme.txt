@@ -40,6 +40,8 @@ License: GNU/GPL v3
                  - added: removefileDelete
                  - added: setCacheId
                  - added: setModule
+2021-09-30  2.7  FIX: remove chdir() in _readCacheItem()
+
 ###############################################################################
 
 --- typical usage:
