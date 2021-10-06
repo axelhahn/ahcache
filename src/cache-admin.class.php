@@ -1,5 +1,6 @@
 <?php
-/** 
+
+/**
  * --------------------------------------------------------------------------------<br>
  *          __    ______           __       
  *   ____ _/ /_  / ____/___ ______/ /_  ___ 
@@ -24,6 +25,7 @@
  * <br>
  * --- HISTORY:<br>
  * 2021-09-28  2.6  first version for admin UI<br>
+ * 2021-10-07  2.7  optical improvements using font awesome<br>
  * --------------------------------------------------------------------------------<br>
  * @version 2.6
  * @author Axel Hahn
@@ -32,145 +34,179 @@
  * @license http://www.gnu.org/licenses/gpl-3.0.html GPL 3.0
  * @package Axels Cache
  */
-
 require_once('cache.class.php');
+
 class AhCacheAdmin extends AhCache {
 
+    protected $_aIcon=[
+        'invalid'=>'<i class="fas fa-eraser"></i>',
+        'item'=>'<i class="fas fa-box-open"></i>',
+        'module'=>'<i class="fas fa-puzzle-piece"></i>',
+        'outdated'=>'<i class="fas fa-hourglass-end"></i>',
+        'size'=>'<i class="fas fa-puzzle-piece"></i>',
+    ];
+    
+    // ----------------------------------------------------------------------
+    // private methods
+    // ----------------------------------------------------------------------
+    
+    /**
+     * for security reasons the admin must be enabled by an existing file
+     * next to the class file. This method returns true if the enable file
+     * exists
+     * @return type
+     */
+    protected function _isEnabled() {
+        $sFile2Check = __DIR__ . '/' . str_replace('.php', '-enabled.php', basename(__FILE__));
+        return file_exists($sFile2Check);
+    }
 
-	protected function _addForm($sUrl, $aAction, $sHtml=''){
-		return '
-			<form action="'.$sUrl.'" method="POST" style="float: left;">
-			<input type="hidden" name="action" value="'.$aAction.'">
-			'.($sHtml ? $sHtml : '<button>'.$aAction.'</button>').'
+    /**
+     * helper function for action buttons: draw a form with a POST action
+     * @param string  $sUrl     target url
+     * @param string  $aAction  value for action item
+     * @param string  $sHtml    html code inside a button
+     * @return type
+     */
+    protected function _addForm($sUrl, $aAction, $sHtml = '') {
+        return '
+			<form action="' . $sUrl . '" method="POST" style="float: left;">
+			<input type="hidden" name="action" value="' . $aAction . '">
+			' . ($sHtml ? $sHtml : '<button>' . $aAction . '</button>') . '
 		</form>';
-	}
-	
-	/**
-	 * get html code - render ul list of existing modules
-	 *
-	 * @param array $aOptions  array with the keys
-	 *                         - baseurl - url prefix
-	 *                         - module  - active module
-	 * @return string
-	 */
-	public function renderModuleList($aOptions=array()){
-		$sReturn='';
-		$aMods=$this->getModules();
-		if(count($aMods)){
-			$sReturn.=''
-				.'Modules: <strong>' .count($aMods).'</strong><br><br>'
-				.'<nav><ul>'
-				// .'<li><a href="'.$aOptions['baseurl'].'&module=">all</a></li>'
-				;
-			foreach($aMods as $sModulename){
-				$sReturn.='<li'
-					.(isset($aOptions['module']) && $aOptions['module']==$sModulename
-						? ' class="active"'
-						: ''
-					)
-					.'><a href="'.$aOptions['baseurl'].'&module='.$sModulename.'">'.$sModulename.'</a></li>';
-			}
-			$sReturn.='</ul></nav>';
-		} else {
-			$sReturn='No Module was found. The cache is not in use - or wasn\'t inizialized with the right cache dir.<br>';
-		}
-		return $sReturn;
-	}
+    }
 
+    // ----------------------------------------------------------------------
+    // public methods
+    // ----------------------------------------------------------------------
+    
+    /**
+     * get html code - render ul list of existing modules
+     *
+     * @param array $aOptions  array with the keys
+     *                         - baseurl - url prefix
+     *                         - module  - active module
+     * @return string
+     */
+    public function renderModuleList($aOptions = array()) {
+        if (!$this->_isEnabled()) {
+            return 'Admin is disabled.';
+        }
+        $sReturn = '';
+        $aMods = $this->getModules();
+        if (count($aMods)) {
+            $sReturn .= ''
+                    . 'Modules: <strong class="counter">' . count($aMods) . '</strong><br><br>'
+                    . '<nav><ul>'
+            // .'<li><a href="'.$aOptions['baseurl'].'&module=">all</a></li>'
+            ;
+            foreach ($aMods as $sModulename) {
+                $sReturn .= '<li'
+                        . (isset($aOptions['module']) && $aOptions['module'] == $sModulename ? ' class="active"' : ''
+                        )
+                        . '><a href="' . $aOptions['baseurl'] . '&module=' . $sModulename . '">'.$this->_aIcon['module'].' ' . $sModulename . '</a></li>';
+            }
+            $sReturn .= '</ul></nav>';
+        } else {
+            $sReturn = 'No Module was found. The cache is not in use - or wasn\'t inizialized with the right cache dir.<br>';
+        }
+        return $sReturn;
+    }
 
-	/**
-	 * get html code - render ul list of existing cache items of a module
-	 *
-	 * @param array $aOptions  array with the keys
-	 *                         - baseurl - url prefix
-	 *                         - module  - active module
-	 * @return string
-	 */
-	public function renderModuleItems($aOptions=array()){
-		$sReturn='';
-		$bHasOutdated=false;
-		$iSize=0;
-		$aItems=$this->getCachedItems(array(
+    /**
+     * get html code - render ul list of existing cache items of a module
+     *
+     * @param array $aOptions  array with the keys
+     *                         - baseurl - url prefix
+     *                         - module  - active module
+     * @return string
+     */
+    public function renderModuleItems($aOptions = array()) {
+        if (!$this->_isEnabled()) {
+            return '';
+        }
+        $sReturn = '';
+        $bHasOutdated = false;
+        $iSize = 0;
+        $aItems = $this->getCachedItems(array(
+        ));
+        // echo '<pre>'.print_r($aItems, 1).'</pre>';
+        if (count($aItems)) {
+            $sReturn .= ''
+                . '<table class="datatable"><thead>
+                        <tr>
+                            <th>cache id</th>
+                            <th>size</th>
+                            <th>TTL [s]</th>
+                            <th>time left [s]</th>
+                            <th>visual</th>
+                        </tr>
+                    </thead>
+                    <tbody>'
+                // .'<li><a href="'.$aOptions['baseurl'].'&module=">all</a></li>'
+                ;
+            foreach ($aItems as $sFile => $aItem) {
 
-		));
-		// echo '<pre>'.print_r($aItems, 1).'</pre>';
-		if(count($aItems)){
-			$sReturn.=''
-				.'<table class="datatable"><thead>
-					<tr>
-						<th>TTL [s]</th>
-						<th>time left [s]</th>
-						<th>visual</th>
-						<th>cache id</th>
-					</tr>
-				</thead>
-				<tbody>'
-				// .'<li><a href="'.$aOptions['baseurl'].'&module=">all</a></li>'
-				;
-			foreach($aItems as $sFile=>$aItem){
+                $iSize += filesize($sFile);
+                // $bSelected=isset($aOptions['item']) && $aOptions['item']==$aItem['cacheid'];
+                $bSelected = isset($aOptions['file']) && $aOptions['file'] == $sFile;
 
-				$iSize+=filesize($sFile);
-				// $bSelected=isset($aOptions['item']) && $aOptions['item']==$aItem['cacheid'];
-				$bSelected=isset($aOptions['file']) && $aOptions['file']==$sFile;
+                $sLabel = strlen($aItem['cacheid']) < 100 ? $aItem['cacheid'] : substr($aItem['cacheid'], 0, 100) . '...'
+                ;
 
-				$sLabel=strlen($aItem['cacheid'])<100
-					? $aItem['cacheid']
-					: substr($aItem['cacheid'],0,100).'...'
-				;
+                $iLeft = max($aItem['_lifetime'], 0);
+                $sBar = $aItem['iTtl'] > 0 ? '<div class="bar"><div class="left" style="width:' . ($iLeft / $aItem['iTtl'] * 100) . '%;"></div></div>' : '';
+                $sClasses = '';
+                $sClasses .= $bSelected ? 'active' : '';
+                if ($aItem['_lifetime'] < $aItem['iTtl'] * 0.33) {
+                    if ($aItem['_lifetime'] < 0) {
+                        $sClasses .= ' outdated';
+                        $bHasOutdated = true;
+                    } else {
+                        $sClasses .= ' less30';
+                    }
+                } else {
+                    $sClasses .= ' ok';
+                }
 
-				$iLeft=max($aItem['_lifetime'], 0);
-				$sBar=$aItem['iTtl']>0 ? '<div class="bar"><div class="left" style="width:'.($iLeft/$aItem['iTtl']*100).'%;"></div></div>' : '';
-				$sClasses='';
-				$sClasses.=$bSelected ? 'active' : '';
-				if($aItem['_lifetime']<$aItem['iTtl']*0.33){
-						if($aItem['_lifetime']<0){
-							$sClasses.=' outdated';
-							$bHasOutdated=true;
-						} else {
-							$sClasses.=' less30';
-						}
-				} else {
-					$sClasses.=' ok';
-				}
+                // Array ( [iTtl] => 86400 [tsExpire] => 1559303108 [module] => ahdiashow [cacheid] => dirD:/htdocs/axel-hahn.de/c58/diashows/images/2015-2018/MachicoArray ( [skip] => Array ( [0] => /_orig/ ) [remove] => D:/htdocs/axel-hahn.de/c58/diashows/images [intelligent] => 1 ) [_lifetime] => -15574681 [_age] => 15661081 ) 
+                $sReturn .= '<tr'
+                        . ($sClasses ? ' class="' . $sClasses . '"' : '' )
+                        . '><td><a href="' . $aOptions['baseurl'] . '&module=' . $aOptions['module'] . '&file=' . $sFile . '" title="' . $aItem['cacheid'] . '">'
+                            . '<i class="fas fa-box-open"></i> ' . $sLabel
+                            . '</a></td>
+                            <td align="right">' . filesize($sFile).'</td>
+                            <td align="right">' . ($aItem['iTtl'] ? $aItem['iTtl'] : '-') . '</td>
+                            <td align="right">' . ($iLeft ? $iLeft : '-') . '</td>
+                            <td><span style="display:none;">' . $iLeft . '</span>' . $sBar . '</td>
+                        </tr>
+                        ';
+            }
+            $sReturn .= '</tbody></table>';
+        } else {
+            $sReturn = 'No Item was found.<br>';
+        }
+        $sSize = ($iSize > 1024 ? ($iSize > 1024 * 1024 ? number_format($iSize / 1024 / 1024, 2) . ' MB' : number_format($iSize / 1024, 2) . ' kB'
+                ) : $iSize . ' byte'
+                );
 
-				// Array ( [iTtl] => 86400 [tsExpire] => 1559303108 [module] => ahdiashow [cacheid] => dirD:/htdocs/axel-hahn.de/c58/diashows/images/2015-2018/MachicoArray ( [skip] => Array ( [0] => /_orig/ ) [remove] => D:/htdocs/axel-hahn.de/c58/diashows/images [intelligent] => 1 ) [_lifetime] => -15574681 [_age] => 15661081 ) 
-				$sReturn.='<tr'
-					.($sClasses ? ' class="'.$sClasses.'"' : '' )
-					.'>
-						<td align="right">'.($aItem['iTtl'] ? $aItem['iTtl'] : '-').'</td>
-						<td align="right">'.($iLeft ? $iLeft : '-').'</td>
-						<td><span style="display:none;">'.$iLeft.'</span>'.$sBar.'</td>
-						<td><a href="'.$aOptions['baseurl'].'&module='.$aOptions['module'].'&file='.$sFile.'" title="'.$aItem['cacheid'].'">'.$sLabel.'</a></td>
-						</tr>
-						';
-			}
-			$sReturn.='</tbody></table>';
-		} else {
-			$sReturn='No Item was found.<br>';
-		}
-		$sSize=($iSize > 1024 
-			? ($iSize > 1024 * 1024 
-				? number_format($iSize/1024/1024,2).' MB' 
-				: number_format($iSize/1024,2).' kB'
-				)
-			: $iSize.' byte'
-		);
+        $sUrl = $aOptions['baseurl'] . '&module=' . $aOptions['module'];
 
-		$sUrl=$aOptions['baseurl'].'&module='.$aOptions['module'];
+        return ''
+                . (count($aItems) ?
+                    '<table class="right">'
+                    . '<tr><td>'.$this->_aIcon['item'].' Items</td><td align="right" class="counter"><strong>' . count($aItems) . '</strong></td></tr>'
+                    . '<tr><td>'.$this->_aIcon['size'].' Size</td><td align="right"><strong>' . $sSize . '</strong></td></tr>'
+                    . '</table>'
+                : ''
+                )
+                  . '<h2>'.$this->_aIcon['module'].' '. $this->sModule.'</h2>'
+                . ($bHasOutdated ? $this->_addForm($sUrl, 'delete', '<button class="delete">'.$this->_aIcon['outdated'].' delete outdated</button>&nbsp;') : ''
+                )
+                . (count($aItems) ? $this->_addForm($sUrl, 'makeInvalid', '<button class="delete">'.$this->_aIcon['invalid'].' make all invalid</button>&nbsp;') : '')
+                . $this->_addForm($sUrl, 'deleteModule', '<button class="delete">'.$this->_aIcon['module'].' delete module</button>&nbsp;')
+                . '<div style="clear: both;"></div><br><br><br>'
+                . $sReturn;
+    }
 
-		return 
-		'<table>'
-		.'<tr><td>Items</td><td><strong>' .count($aItems).'</strong></td></tr>'
-		.'<tr><td>Size</td><td><strong>' .$sSize.'</strong></td></tr>'
-		.'</table><br>'
-		.(count($aItems) ? $this->_addForm($sUrl, 'makeInvalid') : '')
-		.($bHasOutdated 
-			? $this->_addForm($sUrl, 'delete', '<button>delete outdated</button>')
-			: ''
-		)
-		. $this->_addForm($sUrl, 'deleteModule', '<button>delete module</button>')
-		.'<div style="clear: both;"></div><br>'
-		.$sReturn;
-
-	}
 }

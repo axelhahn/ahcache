@@ -48,7 +48,12 @@
  *                  - added: removefileDelete
  *                  - added: setCacheId
  *                  - added: setModule
- * 2021-09-30  2.7  FIX: remove chdir() in _readCacheItem()
+ * 2021-10-07  2.7  FIX: remove chdir() in _readCacheItem()
+ *                  ADD reference file to expire a cache item
+ *                  - added: getRefFile
+ *                  - added: setRefFile
+ *                  - update: dump, isExpired, isNewerThanFile, write
+ *                  - update cache admin
  * --------------------------------------------------------------------------------<br>
  * @version 2.6
  * @author Axel Hahn
@@ -128,6 +133,15 @@ class AhCache {
      */
     private $_sCacheRemovefile = false;
 
+    /**
+     * Reference file: a cache is outdated if the reference file is newer than
+     * the cache item.
+     * TTL can be set in methods setRefFile($sFile) or write($data, $iTtl, $sFile)
+     * TTL can be read with getRefFile()
+     * @var string
+     */
+    private $_sRefFile = false;
+
     /* ----------------------------------------------------------------------
       constructor
       ---------------------------------------------------------------------- */
@@ -203,6 +217,7 @@ class AhCache {
             $this->_aCacheInfos['data'] = $aTmp['data'];
             $this->_iTtl = $aTmp['iTtl'];
             $this->_tsExpire = $aTmp['tsExpire'];
+            $this->_sRefFile = $aTmp['sRefFile'];
             $this->_aCacheInfos['stat'] = stat($this->_sCacheFile);
 
             // @see loadCachefile: it sets module + id to false
@@ -215,14 +230,15 @@ class AhCache {
     /**
      * read a raw cache item and return it as hash
      *
-     * @param string  $sFile  filename with full path
+     * @param string  $sFile  filename with full path or relative to cache base path
      * @return array|boolean
      */
     private function _readCacheItem($sFile) {
-         if (file_exists($sFile)) {
-             return unserialize(file_get_contents($sFile));
-         }
-		 return false;
+        $sFull=file_exists($sFile) ? $sFile : $this->_sCacheDir.'/'.$sFile;
+        if (file_exists($sFull)) {
+            return unserialize(file_get_contents($sFull));
+        }
+        return false;
     }
 
     // ----------------------------------------------------------------------
@@ -491,13 +507,14 @@ class AhCache {
             $sReturn.= "
 				<tr><td><strong>size: </strong></td><td>" . filesize($this->_sCacheFile). " byte</td></tr>
                 <tr><td><strong>created: </strong></td><td>" . filemtime($this->_sCacheFile) . " (" . date("d.m.y - H:i:s", filemtime($this->_sCacheFile)) . ")</td></tr>
-                <tr><td><strong>age: </strong></td><td>" . $this->getAge() . " s</td></tr>
                 <tr><td><strong>ttl: </strong></td><td>" . $this->getTtl() . " s</td></tr>
                 ".($this->getTtl()<0 
 					? '' 
 					: "<tr><td><strong>expires: </strong></td><td>" . $this->getExpire() . " (" . date("d.m.y - H:i:s", $this->getExpire()) . ") "
-					  . ($this->iExpired()>0 ? '<span class="outdated">EXPIRED</span>' : ' ... <span class="ok">' . -$this->iExpired() . " s left" ) . "</td></tr>"
+					  . ($this->iExpired()>0 ? '<span class="outdated">'.$this->iExpired().' s EXPIRED</span>' : ' ... <span class="ok">' . -$this->iExpired() . " s left" ) . "</td></tr>"
 					)
+                ."<tr><td><strong>age: </strong></td><td>" . $this->getAge() . " s</td></tr>"
+                ."<tr><td><strong>reference file: </strong></td><td>" . ($this->getRefFile() ? $this->getRefFile() : 'NONE' ). " </td></tr>"
                 ."<br>
 				</table>
                 <strong>data in the cache:</strong>
@@ -538,6 +555,17 @@ class AhCache {
     public function getExpire() {
         return $this->_tsExpire;
     }
+    
+    // ----------------------------------------------------------------------
+    /**
+     * public function getRefFile() - get reference file that invalidates the
+     * cache item
+     * @since 2.7
+     * @return     int  get ttl of cache
+     */
+    public function getRefFile() {
+        return $this->_sRefFile;
+    }
 
     // ----------------------------------------------------------------------
     /**
@@ -549,24 +577,30 @@ class AhCache {
         return $this->_iTtl;
     }
 
+
     // ----------------------------------------------------------------------
     /**
      * public function isExpired() - cache expired? To check it 
      * you must use ttl while writing data, i.e.
-     * $oCache->write($sData, $iTtl);
+     * $oCache->write($sData, [$iTtl, [RefFile]]);
+     * A cache item is expired if
+     *   - the module remove file is newer
+     *   - if a ttl was set: the min. ttl  
      * @since 2.0
      * @return     bool  cache is expired?
      */
     public function isExpired() {
-        if (!$this->_tsExpire){
-            return true;
-        }
+        // (1) check if remove file was touched
         $iAgeOfCache=$this->getAge();
         if($iAgeOfCache > (date("U")-filemtime($this->_sCacheRemovefile))){
-			return true;
-		}
-
-        return ((date("U") - $this->_tsExpire)>0);
+            return true;
+        }
+        // (2) check if cahe item is expired
+        if ($this->_tsExpire && (date("U") > $this->_tsExpire)){
+            return true;
+        }
+        // (3) check timestamp of reference file (if one was set)
+        return $this->isNewerThanFile();
     }
     // ----------------------------------------------------------------------
     /**
@@ -592,8 +626,11 @@ class AhCache {
      * @param   string   $sRefFile  local filename
      * @return  integer  time in sec how much the cache file is newer; negative if reference file is newer
      */
-    public function isNewerThanFile($sRefFile) {
-        if (!file_exists($sRefFile)){
+    public function isNewerThanFile($sRefFile=null) {
+        if (is_null($sRefFile)){
+            $sRefFile=$this->_sRefFile;
+        }
+        if (!$sRefFile || !file_exists($sRefFile)){
             return false;
         }
         if (!isset($this->_aCacheInfos['stat'])){
@@ -714,6 +751,17 @@ class AhCache {
     }
     // ----------------------------------------------------------------------
     /**
+     * public function setRefFile() - set a reference file that invalidates the
+     * cache if the file is newer than the stored item
+     * @since 2.7
+     * @param   int  $iTtl  ttl value in seconds
+     * @return  int  get ttl of cache
+     */
+    public function setRefFile($sFile) {
+        return $this->_sRefFile = $sFile;
+    }
+    // ----------------------------------------------------------------------
+    /**
      * public function setTtl() - set TTL of cache in seconds
      * You need to write the cache data to ap
      * Remark: You additionally need to call the write() method to store a new ttl value with 
@@ -755,14 +803,15 @@ class AhCache {
      * Write data into a cache. 
      * - data can be any serializable type, like string, array or object
      * - set ttl in s (from now); optional parameter
-     * @param      various  $data    data to store in cache
-     * @param      int      $iTtl    time in s if content cache expires (min. 0)
-     * @return     bool     success  of write action
+     * @param      various  $data      data to store in cache
+     * @param      int      $iTtl      optional: time in s if content cache expires (min. 0)
+     * @param      string   $sRefFile  optional: set a reference file that invalidates the cache if it is newer
+     * @return     bool     success of write action
      */
-    public function write($data = false, $iTtl = -1) {
-        if (!$this->_sCacheFile)
+    public function write($data = false, $iTtl = null, $sRefFile=null) {
+        if (!$this->_sCacheFile){
             return false;
-
+        }
         $sDir = dirname($this->_sCacheFile);
         if (!is_dir($sDir)){
             if (!mkdir($sDir, 0750, true)){
@@ -774,12 +823,16 @@ class AhCache {
             $this->setData($data);
         }
 
-        if (!$iTtl >= 0) {
+        if (!is_null($iTtl)) {
             $this->setTtl($iTtl);
+        }
+        if (!is_null($sRefFile)) {
+            $this->setRefFile($sRefFile);
         }
 
         $aTmp = array(
             'iTtl' => $this->_iTtl,
+            'sRefFile' => $this->_sRefFile,
             'tsExpire' => date("U") + $this->_iTtl,
             'module' => $this->sModule,
             'cacheid' => $this->sCacheID,
