@@ -26,7 +26,7 @@ PHP7 or 8
   * Fast filebased local cache
   * cache items are initialized with any application and an id to make it unique and to separate all cache items by an application or task
   * invalidate your cache with different methods:
-    * ba a TTL vlue in seconds
+    * by a TTL vlue in seconds
 	* by a local reference file (you can touch a file to invalidate a cache)
     * touch a single module based file to all cache items of th module
   * a cleanup method can delete all outdated cache items of all applications or a selected application
@@ -103,7 +103,7 @@ echo $sContent;
 	
 Example: compare age of cache with age of a sourcefile (before version v 2.8)
 
-```
+```php
 require_once("/php/cache.class.php");  
 $sCsvFile="my_source_file.csv"  
   
@@ -138,5 +138,7 @@ $o=new Cache(); $o->cleanup(60*60*24*1);
 ```
 
 ## Cache admin
+
+Optionally you can enable a web ui to browse all modules and  its known cache items.
 
 ![Cache admin](./doc/cache-admin.png)
