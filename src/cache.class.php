@@ -594,7 +594,7 @@ class AhCache {
         // cache data already exist? $this->_aCacheInfos is set by constructor 
         // in the read method
         if(!isset($this->_aCacheInfos['data'])){
-            return false;
+            return true;
         }
         // check if remove file was touched
         $iAgeOfCache=$this->getAge();
@@ -606,7 +606,7 @@ class AhCache {
             return true;
         }
         // check timestamp of reference file (if one was set)
-        return $this->isNewerThanFile();
+        return !$this->isNewerThanFile();
     }
     // ----------------------------------------------------------------------
     /**
@@ -637,7 +637,7 @@ class AhCache {
             $sRefFile=$this->_sRefFile;
         }
         if (!$sRefFile || !file_exists($sRefFile)){
-            return false;
+            return true;
         }
         if (!isset($this->_aCacheInfos['stat'])){
             return false;
