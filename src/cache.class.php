@@ -48,14 +48,15 @@
  *                  - added: removefileDelete
  *                  - added: setCacheId
  *                  - added: setModule
- * 2021-10-07  2.7  FIX: remove chdir() in _readCacheItem()
+ * 2021-09-30  2.7  FIX: remove chdir() in _readCacheItem()
+ * 2021-10-07  2.8  FIX: remove chdir() in _readCacheItem()
  *                  ADD reference file to expire a cache item
  *                  - added: getRefFile
  *                  - added: setRefFile
  *                  - update: dump, isExpired, isNewerThanFile, write
  *                  - update cache admin
  * --------------------------------------------------------------------------------<br>
- * @version 2.6
+ * @version 2.8
  * @author Axel Hahn
  * @link https://www.axel-hahn.de/docs/ahcache/index.htm
  * @license GPL
@@ -217,7 +218,7 @@ class AhCache {
             $this->_aCacheInfos['data'] = $aTmp['data'];
             $this->_iTtl = $aTmp['iTtl'];
             $this->_tsExpire = $aTmp['tsExpire'];
-            $this->_sRefFile = $aTmp['sRefFile'];
+            $this->_sRefFile = isset($aTmp['sRefFile']) ? $aTmp['sRefFile'] : false;
             $this->_aCacheInfos['stat'] = stat($this->_sCacheFile);
 
             // @see loadCachefile: it sets module + id to false
@@ -560,7 +561,7 @@ class AhCache {
     /**
      * public function getRefFile() - get reference file that invalidates the
      * cache item
-     * @since 2.7
+     * @since 2.8
      * @return     int  get ttl of cache
      */
     public function getRefFile() {
@@ -590,16 +591,21 @@ class AhCache {
      * @return     bool  cache is expired?
      */
     public function isExpired() {
-        // (1) check if remove file was touched
+        // cache data already exist? $this->_aCacheInfos is set by constructor 
+        // in the read method
+        if(!isset($this->_aCacheInfos['data'])){
+            return false;
+        }
+        // check if remove file was touched
         $iAgeOfCache=$this->getAge();
         if($iAgeOfCache > (date("U")-filemtime($this->_sCacheRemovefile))){
             return true;
         }
-        // (2) check if cahe item is expired
+        // check if cahe item is expired
         if ($this->_tsExpire && (date("U") > $this->_tsExpire)){
             return true;
         }
-        // (3) check timestamp of reference file (if one was set)
+        // check timestamp of reference file (if one was set)
         return $this->isNewerThanFile();
     }
     // ----------------------------------------------------------------------
@@ -753,7 +759,7 @@ class AhCache {
     /**
      * public function setRefFile() - set a reference file that invalidates the
      * cache if the file is newer than the stored item
-     * @since 2.7
+     * @since 2.8
      * @param   int  $iTtl  ttl value in seconds
      * @return  int  get ttl of cache
      */
