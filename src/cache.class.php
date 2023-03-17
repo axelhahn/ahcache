@@ -55,6 +55,7 @@
  *                  - added: setRefFile
  *                  - update: dump, isExpired, isNewerThanFile, write
  *                  - update cache admin
+ * 2023-03-17  2.9  FIX: harden _getAllCacheData to prevent PHP warnings
  * --------------------------------------------------------------------------------<br>
  * @version 2.8
  * @author Axel Hahn
@@ -214,10 +215,11 @@ class AhCache {
         }
         $this->_aCacheInfos = array();
         $aTmp = $this->_readCacheItem($this->_sCacheFile);
-        if ($aTmp) {
-            $this->_aCacheInfos['data'] = $aTmp['data'];
-            $this->_iTtl = $aTmp['iTtl'];
-            $this->_tsExpire = $aTmp['tsExpire'];
+        if (is_array($aTmp) && count($aTmp)) {
+            $this->_aCacheInfos['data'] = isset($aTmp['data']) ? $aTmp['data']     : false;
+            $this->_iTtl                = $aTmp['iTtl']        ? $aTmp['iTtl']     : -1;
+            $this->_tsExpire            = $aTmp['tsExpire']    ? $aTmp['tsExpire'] : -1;
+
             $this->_sRefFile = isset($aTmp['sRefFile']) ? $aTmp['sRefFile'] : false;
             $this->_aCacheInfos['stat'] = stat($this->_sCacheFile);
 
@@ -348,7 +350,7 @@ class AhCache {
      *                          - ttlBelow         integer  return items with ttl less than [n] sec
      *                          - ttlGreater       integer  return items with ttl more than [n] sec
      *                          no filter returns all cached entries
-     * @return void
+     * @return array
      */
     public function getCachedItems($sDir=false, $aFilter=array()){
         $aReturn=array();
