@@ -3,9 +3,9 @@
 
 AXELS CONTENT CACHE CLASS
 
-Version V2.7
+Version V2.10
 
-DOCS: <https://www.axel-hahn.de/docs/ahcache/index.htm>
+DOCS: <https://www.axel-hahn.de/docs/ahcache/>
 
 License: GNU/GPL v3
 
@@ -19,7 +19,7 @@ Write it ... and instead of repeating the long running process on a frequent req
 
 ## Reqirements
 
-PHP7 or 8
+PHP7 or 8 (up to PHP 8.2)
 
 ## Features
 
