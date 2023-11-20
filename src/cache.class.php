@@ -58,10 +58,11 @@
  *                  - update cache admin
  * 2023-03-17  2.9  FIX: harden _getAllCacheData to prevent PHP warnings
  * 2023-06-02  2.10 shorten code: defaults using ??; short array syntax
+ * 2023-11-20  2.11 check data subkey before writing
  * --------------------------------------------------------------------------------<br>
  * compatible to PHP 7 ... 8.2<br>
  * --------------------------------------------------------------------------------<br>
- * @version 2.10
+ * @version 2.11
  * @author Axel Hahn
  * @link https://www.axel-hahn.de/docs/ahcache/index.htm
  * @license GPL
@@ -876,7 +877,7 @@ if (!class_exists("AhCache")) {
                 'tsExpire' => date("U") + $this->_iTtl,
                 'module' => $this->sModule,
                 'cacheid' => $this->sCacheID,
-                'data' => $this->_aCacheInfos['data'],
+                'data' => isset($this->_aCacheInfos['data']) ? $this->_aCacheInfos['data'] : '',
             ];
             return file_put_contents($this->_sCacheFile, serialize($aTmp));
         }
