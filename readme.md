@@ -3,11 +3,13 @@
 
 AXELS CONTENT CACHE CLASS
 
-Version V2.7
+Version 2.11
 
-DOCS: <https://www.axel-hahn.de/docs/ahcache/index.htm>
+👤 Author: Axel Hahn \
+🧾 Source: <https://github.com/axelhahn/ahcache/> \
+📜 License: GNU GPL 3.0 \
+📗 Docs: <https://www.axel-hahn.de/docs/ahcache/>
 
-License: GNU/GPL v3
 
 ## Description
 
@@ -19,18 +21,18 @@ Write it ... and instead of repeating the long running process on a frequent req
 
 ## Reqirements
 
-PHP7 or 8
+PHP7 or 8 (up to PHP 8.2)
 
 ## Features
 
-  * Fast filebased local cache
-  * cache items are initialized with any application and an id to make it unique and to separate all cache items by an application or task
-  * invalidate your cache with different methods:
-    * by a TTL vlue in seconds
-	* by a local reference file (you can touch a file to invalidate a cache)
-    * touch a single module based file to all cache items of th module
-  * a cleanup method can delete all outdated cache items of all applications or a selected application
-  * a cache admin (web ui) visualizes the created cache items 
+* Fast filebased local cache
+* cache items are initialized with any application and an id to make it unique and to separate all cache items by an application or task
+* invalidate your cache with different methods:
+  * by a TTL vlue in seconds
+* by a local reference file (you can touch a file to invalidate a cache)
+  * touch a single module based file to all cache items of th module
+* a cleanup method can delete all outdated cache items of all applications or a selected application
+* a cache admin (web ui) visualizes the created cache items 
 
 ## History
 ```
@@ -68,6 +70,15 @@ PHP7 or 8
                  - added: setRefFile
                  - update: dump, isExpired, isNewerThanFile, write
                  - update cache admin
+2021-10-07  2.8  FIX: remove chdir() in _readCacheItem()
+                 ADD reference file to expire a cache item
+                 - added: getRefFile
+                 - added: setRefFile
+                 - update: dump, isExpired, isNewerThanFile, write
+                 - update cache admin
+2023-03-17  2.9  FIX: harden _getAllCacheData to prevent PHP warnings
+2023-06-02  2.10 shorten code: defaults using ??; short array syntax
+2023-11-20  2.11 check data subkey before writing
 ```
 
 ## Code examples
