@@ -59,10 +59,11 @@
  * 2023-03-17  2.9  FIX: harden _getAllCacheData to prevent PHP warnings
  * 2023-06-02  2.10 shorten code: defaults using ??; short array syntax
  * 2023-11-20  2.11 check data subkey before writing
+ * 2024-06-25  2.12 WIP: add type declarations for PHP 8
  * --------------------------------------------------------------------------------<br>
- * compatible to PHP 7 ... 8.2<br>
+ * compatible to PHP 8 ... 8.2<br>
  * --------------------------------------------------------------------------------<br>
- * @version 2.11
+ * @version 2.12
  * @author Axel Hahn
  * @link https://www.axel-hahn.de/docs/ahcache/index.htm
  * @license GPL
@@ -77,13 +78,13 @@ if (!class_exists("AhCache")) {
          * a module name string is used as relative cache path
          * @var string 
          */
-        var $sModule = '';
+        var string $sModule = '';
 
         /**
          * id of cachefile (filename will be generated from it)
          * @var string 
          */
-        var $sCacheID = '';
+        var string $sCacheID = '';
 
         /**
          * where to store all cache data - it can be outside docRoot. If it is 
@@ -92,25 +93,25 @@ if (!class_exists("AhCache")) {
          * or $TEMP/~cache/ for CLI
          * @var string 
          */
-        private $_sCacheDir = '';
+        private string $_sCacheDir = '';
 
         /**
          * absolute filename of cache file
          * @var string 
          */
-        private $_sCacheFile = '';
+        private string $_sCacheFile = '';
 
         /**
          * divider to limit count of cachefiles
-         * @var type 
+         * @var int 
          */
-        private $_sCacheDirDivider = false;
+        private int $_sCacheDirDivider = false;
 
         /**
          * fileextension for storing cachefiles (without ".")
          * @var string
          */
-        private $_sCacheExt = 'cacheclass2';
+        private string $_sCacheExt = 'cacheclass2';
 
         /**
          * Expiration timestamp; 
@@ -118,7 +119,7 @@ if (!class_exists("AhCache")) {
          * TTL can be read with getExpire()
          * @var integer
          */
-        private $_tsExpire = -1;
+        private int $_tsExpire = -1;
 
         /**
          * TTL (time to live) in s; 
@@ -126,19 +127,19 @@ if (!class_exists("AhCache")) {
          * TTL can be read with getTtl()
          * @var integer
          */
-        private $_iTtl = -1;
+        private int $_iTtl = -1;
 
         /**
          * cachedata and file infos of cachefile (returned array of php function stat)
          * @var array
          */
-        private $_aCacheInfos = [];
+        private array $_aCacheInfos = [];
 
         /**
          * Full path to a cache remove file for the current module
          * @var string
          */
-        private $_sCacheRemovefile = false;
+        private string $_sCacheRemovefile = '';
 
         /**
          * Reference file: a cache is outdated if the reference file is newer than
@@ -147,7 +148,7 @@ if (!class_exists("AhCache")) {
          * TTL can be read with getRefFile()
          * @var string
          */
-        private $_sRefFile = false;
+        private string $_sRefFile = '';
 
         /* ----------------------------------------------------------------------
       constructor
@@ -159,7 +160,7 @@ if (!class_exists("AhCache")) {
          * @param  string  $sCacheID  cache-id (must be uniq within a module; used to generate filename of cachefile)
          * @return boolean 
          */
-        public function __construct($sModule = ".", $sCacheID = '.')
+        public function __construct(string $sModule = ".", string $sCacheID = '.')
         {
             $this->setModule($sModule, $sCacheID);
             return true;
@@ -176,8 +177,9 @@ if (!class_exists("AhCache")) {
          * - set a cache
          * - set remove file (if does not exist)
          * directory
+         * @return bool
          */
-        private function _setup()
+        private function _setup(): bool
         {
             if (!$this->sModule) {
                 die("ERROR: no module was given.<br>");
@@ -187,7 +189,7 @@ if (!class_exists("AhCache")) {
             }
             $sCfgfile = "cache.class_config.php";
             if (file_exists(__DIR__ . "/" . $sCfgfile)) {
-                include(__DIR__ . "/" . $sCfgfile);
+                include (__DIR__ . "/" . $sCfgfile);
             }
             if (!$this->_sCacheDir) {
                 if (getenv("TEMP"))
@@ -216,7 +218,7 @@ if (!class_exists("AhCache")) {
          * @since 2.0
          * @return     array  array with data, file stat
          */
-        private function _getAllCacheData()
+        private function _getAllCacheData(): array|bool
         {
             if (!$this->_sCacheFile) {
                 return false;
@@ -225,8 +227,8 @@ if (!class_exists("AhCache")) {
             $aTmp = $this->_readCacheItem($this->_sCacheFile);
             if (is_array($aTmp) && count($aTmp)) {
                 $this->_aCacheInfos['data'] = $aTmp['data'] ?? false;
-                $this->_iTtl                = $aTmp['iTtl']        ? $aTmp['iTtl']     : -1;
-                $this->_tsExpire            = $aTmp['tsExpire']    ? $aTmp['tsExpire'] : -1;
+                $this->_iTtl = $aTmp['iTtl'] ? $aTmp['iTtl'] : -1;
+                $this->_tsExpire = $aTmp['tsExpire'] ? $aTmp['tsExpire'] : -1;
 
                 $this->_sRefFile = $aTmp['sRefFile'] ?? false;
                 $this->_aCacheInfos['stat'] = stat($this->_sCacheFile);
@@ -244,7 +246,7 @@ if (!class_exists("AhCache")) {
          * @param string  $sFile  filename with full path or relative to cache base path
          * @return array|boolean
          */
-        private function _readCacheItem($sFile)
+        private function _readCacheItem(string $sFile): array|bool
         {
             $sFull = file_exists($sFile) ? $sFile : $this->_sCacheDir . '/' . $sFile;
             if (file_exists($sFull)) {
@@ -258,7 +260,7 @@ if (!class_exists("AhCache")) {
          * private function _getCacheFilename() - get full filename of cachefile
          * @return     string  full filename of cachefile
          */
-        private function _getCacheFilename()
+        private function _getCacheFilename(): string
         {
             $sMyFile = md5($this->sCacheID);
             if ($this->_sCacheDirDivider && $this->_sCacheDirDivider > 0) {
@@ -280,9 +282,9 @@ if (!class_exists("AhCache")) {
          *
          * @param string    $sDir
          * @param boolean   $bShowOutput   flag: show output? default: false (=no output)
-         * @return void
+         * @return boolean
          */
-        private function _removeEmptyCacheDir($sDir, $bShowOutput = false)
+        private function _removeEmptyCacheDir(string $sDir, bool $bShowOutput = false): bool
         {
             // echo $bShowOutput ? __METHOD__."($sDir)<br>\n" : '';
             if ($sDir > $this->_sCacheDir . "/" . $this->sModule) {
@@ -326,9 +328,9 @@ if (!class_exists("AhCache")) {
          * @since 2.0
          * @param int       $iSec          max age of cachefile; older cachefiles will be deleted
          * @param boolean   $bShowOutput   flag: show output? default: false (=no output)
-         * @return     true
+         * @return     boolean
          */
-        public function cleanup($iSec = false, $bShowOutput = false)
+        public function cleanup(int $iSec = false, bool $bShowOutput = false): bool
         {
             // quick and dirty
             $aFilter = ['lifetimeBelow' => 0];
@@ -362,9 +364,9 @@ if (!class_exists("AhCache")) {
          *                          - ttlBelow         integer  return items with ttl less than [n] sec
          *                          - ttlGreater       integer  return items with ttl more than [n] sec
          *                          no filter returns all cached entries
-         * @return array
+         * @return array|boolean
          */
-        public function getCachedItems($sDir = false, $aFilter = [])
+        public function getCachedItems(string $sDir = false, array $aFilter = []): array|bool
         {
             $aReturn = [];
             $sDir = $sDir ? $sDir : $this->_sCacheDir . "/" . $this->sModule;
@@ -374,7 +376,7 @@ if (!class_exists("AhCache")) {
             }
             if (!($d = dir($sDir))) {
                 // echo "\t Cannot open directory - [$sDir]</ul></li></ul>";
-                return;
+                return false;
             }
             while ($entry = $d->read()) {
                 $sEntry = $sDir . "/" . $entry;
@@ -436,7 +438,7 @@ if (!class_exists("AhCache")) {
          * @since 2.6
          * @return string
          */
-        public function getCurrentModule()
+        public function getCurrentModule(): string
         {
             return $this->sModule;
         }
@@ -447,7 +449,7 @@ if (!class_exists("AhCache")) {
          * @since 2.6
          * @return string
          */
-        public function getCurrentId()
+        public function getCurrentId(): string
         {
             return $this->sCacheID;
         }
@@ -459,7 +461,7 @@ if (!class_exists("AhCache")) {
          * 
          * @return array
          */
-        public function getModules()
+        public function getModules(): array
         {
             $aReturn = [];
             foreach (glob($this->_sCacheDir . '/*') as $sEntry) {
@@ -477,7 +479,7 @@ if (!class_exists("AhCache")) {
          * does not exist (yet) or the deletion failed.
          * @return     boolean
          */
-        public function delete()
+        public function delete(): bool
         {
             if (!file_exists($this->_sCacheFile)) {
                 return false;
@@ -499,7 +501,7 @@ if (!class_exists("AhCache")) {
          * @param boolean   $bShowOutput   flag: show output? default: false (=no output)
          * @return     boolean
          */
-        public function deleteModule($bShowOutput = false)
+        public function deleteModule(bool $bShowOutput = false): bool
         {
             if (!$this->sModule) {
                 return false;
@@ -514,7 +516,7 @@ if (!class_exists("AhCache")) {
          * public function dump() - dump variables of cache class
          * @return     true
          */
-        public function dump()
+        public function dump(): bool
         {
             $sReturn = '';
             $sReturn .= "<table>
@@ -555,7 +557,7 @@ if (!class_exists("AhCache")) {
          * public function getCacheAge() - get age in seconds of exisiting cachefile
          * @return     int  age in seconds; -1 if cachefiles does not exist
          */
-        public function getAge()
+        public function getAge(): int
         {
             if (!isset($this->_aCacheInfos['stat'])) {
                 $this->_getAllCacheData();
@@ -572,7 +574,7 @@ if (!class_exists("AhCache")) {
          * @since 2.0
          * @return     int  unix ts of cache expiration
          */
-        public function getExpire()
+        public function getExpire(): int
         {
             return $this->_tsExpire;
         }
@@ -584,7 +586,7 @@ if (!class_exists("AhCache")) {
          * @since 2.8
          * @return     int  get ttl of cache
          */
-        public function getRefFile()
+        public function getRefFile(): int
         {
             return $this->_sRefFile;
         }
@@ -595,7 +597,7 @@ if (!class_exists("AhCache")) {
          * @since 2.0
          * @return     int  get ttl of cache
          */
-        public function getTtl()
+        public function getTtl(): int
         {
             return $this->_iTtl;
         }
@@ -612,7 +614,7 @@ if (!class_exists("AhCache")) {
          * @since 2.0
          * @return     bool  cache is expired?
          */
-        public function isExpired()
+        public function isExpired(): bool
         {
             // cache data already exist? $this->_aCacheInfos is set by constructor 
             // in the read method
@@ -639,7 +641,7 @@ if (!class_exists("AhCache")) {
          * @since 2.1
          * @return     int  expired time in seconds; negative if cache is not expired
          */
-        public function iExpired()
+        public function iExpired(): int|bool
         {
             if (!$this->_tsExpire) {
                 return true;
@@ -656,7 +658,7 @@ if (!class_exists("AhCache")) {
          * @param   string   $sRefFile  local filename
          * @return  integer  time in sec how much the cache file is newer; negative if reference file is newer
          */
-        public function isNewerThanFile($sRefFile = null)
+        public function isNewerThanFile(string|null $sRefFile = null): int|bool
         {
             if (is_null($sRefFile)) {
                 $sRefFile = $this->_sRefFile;
@@ -684,7 +686,7 @@ if (!class_exists("AhCache")) {
          * @param string  $sFile  filename with full path
          * @return boolean
          */
-        public function loadCachefile($sFile)
+        public function loadCachefile(string $sFile): bool
         {
             $this->_sCacheFile = false;
             $this->sModule = false;
@@ -704,9 +706,9 @@ if (!class_exists("AhCache")) {
         // ----------------------------------------------------------------------
         /**
          * public function getCacheData() - read cachedata if it exist
-         * @return     various  cachedata or false if cache does not exist
+         * @return     mixed  cachedata or false if cache does not exist
          */
-        public function read()
+        public function read(): mixed
         {
             if (!isset($this->_aCacheInfos['data'])) {
                 $this->_getAllCacheData();
@@ -724,7 +726,7 @@ if (!class_exists("AhCache")) {
          * @since 2.6
          * @return boolean
          */
-        public function removefileDelete()
+        public function removefileDelete(): bool
         {
             if (file_exists($this->_sCacheRemovefile)) {
                 return unlink($this->_sCacheRemovefile);
@@ -738,7 +740,7 @@ if (!class_exists("AhCache")) {
          * @since 2.6
          * @return boolean
          */
-        public function removefileTouch()
+        public function removefileTouch(): bool
         {
             return touch($this->_sCacheRemovefile);
         }
@@ -748,10 +750,10 @@ if (!class_exists("AhCache")) {
          * data can be any serializable type, like string, array or object
          * Remark: You additionally need to call the write() method to store data in the filesystem
          * @since 2.0
-         * @param      various  $data  data to store in cache
+         * @param      mixed  $data  data to store in cache
          * @return   boolean
          */
-        public function setData($data)
+        public function setData($data): bool
         {
             return $this->_aCacheInfos['data'] = $data;
         }
@@ -763,7 +765,7 @@ if (!class_exists("AhCache")) {
          *                            you addiionally need to call setCacheId()
          * @return boolean
          */
-        public function setCacheId($sCacheID)
+        public function setCacheId(string $sCacheID): bool
         {
             $this->sCacheID = $sCacheID;
 
@@ -782,7 +784,7 @@ if (!class_exists("AhCache")) {
          *                            you addiionally need to call setCacheId()
          * @return boolean
          */
-        public function setModule($sModule, $sCacheID = false)
+        public function setModule(string $sModule, string $sCacheID = false): bool
         {
             $this->sModule = $sModule;
             return $this->setCacheId($sCacheID);
@@ -792,12 +794,13 @@ if (!class_exists("AhCache")) {
          * public function setRefFile() - set a reference file that invalidates the
          * cache if the file is newer than the stored item
          * @since 2.8
-         * @param   int  $iTtl  ttl value in seconds
-         * @return  int  get ttl of cache
+         * @param   string   $sFile  filename of reference file with full path
+         * @return  boolean
          */
-        public function setRefFile($sFile)
+        public function setRefFile(string $sFile): bool
         {
-            return $this->_sRefFile = $sFile;
+            $this->_sRefFile = $sFile;
+            return true;
         }
         // ----------------------------------------------------------------------
         /**
@@ -809,7 +812,7 @@ if (!class_exists("AhCache")) {
          * @param   int  $iTtl  ttl value in seconds
          * @return  int  get ttl of cache
          */
-        public function setTtl($iTtl)
+        public function setTtl(int $iTtl): int
         {
             return $this->_iTtl = $iTtl;
         }
@@ -820,7 +823,7 @@ if (!class_exists("AhCache")) {
          * For cached data a new expiration based on existing ttl will be set
          * @return boolean 
          */
-        public function touch()
+        public function touch(): bool
         {
             if (!file_exists($this->_sCacheFile)) {
                 return false;
@@ -843,12 +846,12 @@ if (!class_exists("AhCache")) {
          * Write data into a cache. 
          * - data can be any serializable type, like string, array or object
          * - set ttl in s (from now); optional parameter
-         * @param      various  $data      data to store in cache
+         * @param      mixed  $data      data to store in cache
          * @param      int      $iTtl      optional: time in s if content cache expires (min. 0)
          * @param      string   $sRefFile  optional: set a reference file that invalidates the cache if it is newer
          * @return     bool     success of write action
          */
-        public function write($data = false, $iTtl = null, $sRefFile = null)
+        public function write(mixed $data = false, int $iTtl = null, string|null $sRefFile = null): bool
         {
             if (!$this->_sCacheFile) {
                 return false;

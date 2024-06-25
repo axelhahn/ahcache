@@ -79,6 +79,7 @@ PHP7 or 8 (up to PHP 8.2)
 2023-03-17  2.9  FIX: harden _getAllCacheData to prevent PHP warnings
 2023-06-02  2.10 shorten code: defaults using ??; short array syntax
 2023-11-20  2.11 check data subkey before writing
+2024-06-25  2.12 WIP: add type declarations for PHP 8
 ```
 
 ## Code examples
