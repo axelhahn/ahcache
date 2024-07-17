@@ -59,9 +59,9 @@
  * 2023-03-17  2.9  FIX: harden _getAllCacheData to prevent PHP warnings
  * 2023-06-02  2.10 shorten code: defaults using ??; short array syntax
  * 2023-11-20  2.11 check data subkey before writing
- * 2024-06-25  2.12 WIP: add type declarations for PHP 8
+ * 2024-07-17  2.12 WIP: add type declarations for PHP 8
  * --------------------------------------------------------------------------------<br>
- * compatible to PHP 8 ... 8.2<br>
+ * compatible to PHP 8 ... 8.3<br>
  * --------------------------------------------------------------------------------<br>
  * @version 2.12
  * @author Axel Hahn
@@ -105,7 +105,7 @@ if (!class_exists("AhCache")) {
          * divider to limit count of cachefiles
          * @var int 
          */
-        private int $_sCacheDirDivider = false;
+        private int $_sCacheDirDivider = 0;
 
         /**
          * fileextension for storing cachefiles (without ".")
@@ -330,7 +330,7 @@ if (!class_exists("AhCache")) {
          * @param boolean   $bShowOutput   flag: show output? default: false (=no output)
          * @return     boolean
          */
-        public function cleanup(int $iSec = false, bool $bShowOutput = false): bool
+        public function cleanup(int $iSec = 0, bool $bShowOutput = false): bool
         {
             // quick and dirty
             $aFilter = ['lifetimeBelow' => 0];
@@ -366,7 +366,7 @@ if (!class_exists("AhCache")) {
          *                          no filter returns all cached entries
          * @return array|boolean
          */
-        public function getCachedItems(string $sDir = false, array $aFilter = []): array|bool
+        public function getCachedItems(string $sDir = '', array $aFilter = []): array|bool
         {
             $aReturn = [];
             $sDir = $sDir ? $sDir : $this->_sCacheDir . "/" . $this->sModule;
@@ -784,7 +784,7 @@ if (!class_exists("AhCache")) {
          *                            you addiionally need to call setCacheId()
          * @return boolean
          */
-        public function setModule(string $sModule, string $sCacheID = false): bool
+        public function setModule(string $sModule, string $sCacheID = ''): bool
         {
             $this->sModule = $sModule;
             return $this->setCacheId($sCacheID);
