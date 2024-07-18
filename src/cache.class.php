@@ -61,7 +61,7 @@
  * 2023-11-20  2.11 check data subkey before writing
  * 2024-06-25  2.12 WIP: add type declarations for PHP 8
  * --------------------------------------------------------------------------------<br>
- * compatible to PHP 8 ... 8.2<br>
+ * compatible to PHP 8 ... 8.3<br>
  * --------------------------------------------------------------------------------<br>
  * @version 2.12
  * @author Axel Hahn
@@ -755,7 +755,8 @@ if (!class_exists("AhCache")) {
          */
         public function setData($data): bool
         {
-            return $this->_aCacheInfos['data'] = $data;
+            $this->_aCacheInfos['data'] = $data;
+            return true;
         }
 
         /**
