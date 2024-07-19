@@ -103,7 +103,7 @@ function actDeleteOutdated(): void
     global $sModule, $sCachefile;
     if ($sModule) {
         $oCache = new AhCacheAdmin($sModule);
-        $aItems = $oCache->getCachedItems([]);
+        $aItems = $oCache->getCachedItems();
         foreach (array_keys($aItems) as $sFile) {
             $oCache->loadCachefile($sFile);
             if ($oCache->isExpired()) {
