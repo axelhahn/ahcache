@@ -3,13 +3,12 @@
 
 AXELS CONTENT CACHE CLASS
 
-Version 2.11
+Version 2.12
 
 👤 Author: Axel Hahn \
 🧾 Source: <https://github.com/axelhahn/ahcache/> \
 📜 License: GNU GPL 3.0 \
 📗 Docs: <https://www.axel-hahn.de/docs/ahcache/>
-
 
 ## Description
 
@@ -21,7 +20,7 @@ Write it ... and instead of repeating the long running process on a frequent req
 
 ## Reqirements
 
-PHP7 or 8 (up to PHP 8.2)
+PHP8 (up to PHP 8.3)
 
 ## Features
 
