@@ -27,7 +27,7 @@
  * 2021-09-28  2.6  first version for admin UI<br>
  * 2021-10-07  2.7  optical improvements using font awesome<br>
  * 2023-06-02  2.10 shorten code: defaults using ??; short array syntax<br>
- * 2024-06-25  2.12 WIP: add type declarations for PHP 8
+ * 2024-07-19  2.12 WIP: add type declarations for PHP 8
  * --------------------------------------------------------------------------------<br>
  * @version 2.12
  * @author Axel Hahn
@@ -135,7 +135,7 @@ class AhCacheAdmin extends AhCache
         $sReturn = '';
         $bHasOutdated = false;
         $iSize = 0;
-        $aItems = $this->getCachedItems([]);
+        $aItems = $this->getCachedItems();
         // echo '<pre>'.print_r($aItems, 1).'</pre>';
         if (count($aItems)) {
             $sReturn .= ''
