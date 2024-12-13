@@ -3,7 +3,7 @@
 
 AXELS CONTENT CACHE CLASS
 
-File based cache for all serializable types: values, strigs, arrays, objects
+File based cache for all serializable types: values, strings, arrays, objects
 
 Version 2.13
 
