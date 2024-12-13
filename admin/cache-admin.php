@@ -39,9 +39,9 @@ $sCachefile = $_GET['file'] ?? false;
 
 /**
  * get list of modules to build a navigation
- * @return array
+ * @return string
  */
-function getNav()
+function getNav(): string
 {
     global $sModule;
     $oCache = new AhCacheAdmin();
@@ -53,9 +53,9 @@ function getNav()
 
 /**
  * get a list of cached items of the selected module
- * @return array
+ * @return string
  */
-function getItems()
+function getItems(): string
 {
     global $sModule, $sCachefile;
     if ($sModule) {
@@ -72,9 +72,9 @@ function getItems()
 
 /**
  * get details of a selected cache item as html code
- * @return string
+ * @return void
  */
-function getDetails()
+function getDetails(): void
 {
     global $sModule, $sCachefile;
     if ($sModule && $sCachefile) {
@@ -96,19 +96,20 @@ function getDetails()
 
 /**
  * delete outdated cache items
+ * @return void
  */
-function actDeleteOutdated()
+function actDeleteOutdated(): void
 {
     global $sModule, $sCachefile;
     if ($sModule) {
         $oCache = new AhCacheAdmin($sModule);
-        $aItems = $oCache->getCachedItems([]);
+        $aItems = $oCache->getCachedItems();
         foreach (array_keys($aItems) as $sFile) {
             $oCache->loadCachefile($sFile);
             if ($oCache->isExpired()) {
                 echo "expired: $sFile - "
                     . ($oCache->delete() ? 'OK: deleted' : 'ERROR: deletion failed.')
-                    . '<br>';
+                    . PHP_EOL;
             }
         }
     }

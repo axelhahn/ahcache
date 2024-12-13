@@ -27,8 +27,9 @@
  * 2021-09-28  2.6  first version for admin UI<br>
  * 2021-10-07  2.7  optical improvements using font awesome<br>
  * 2023-06-02  2.10 shorten code: defaults using ??; short array syntax<br>
+ * 2024-07-19  2.12 WIP: add type declarations for PHP 8
  * --------------------------------------------------------------------------------<br>
- * @version 2.10
+ * @version 2.12
  * @author Axel Hahn
  * @link https://www.axel-hahn.de/docs/ahcache/index.htm
  * @license GPL
@@ -40,7 +41,7 @@ require_once('cache.class.php');
 class AhCacheAdmin extends AhCache
 {
 
-    protected $_aIcon = [
+    protected array $_aIcon = [
         'invalid' => '<i class="fas fa-eraser"></i>',
         'item' => '<i class="fas fa-box-open"></i>',
         'module' => '<i class="fas fa-puzzle-piece"></i>',
@@ -56,9 +57,9 @@ class AhCacheAdmin extends AhCache
      * for security reasons the admin must be enabled by an existing file
      * next to the class file. This method returns true if the enable file
      * exists
-     * @return type
+     * @return boolean
      */
-    protected function _isEnabled()
+    protected function _isEnabled(): bool
     {
         $sFile2Check = __DIR__ . '/' . str_replace('.php', '-enabled.php', basename(__FILE__));
         return file_exists($sFile2Check);
@@ -67,16 +68,16 @@ class AhCacheAdmin extends AhCache
     /**
      * helper function for action buttons: draw a form with a POST action
      * @param string  $sUrl     target url
-     * @param string  $aAction  value for action item
+     * @param string  $sAction  value for action item
      * @param string  $sHtml    html code inside a button
-     * @return type
+     * @return string
      */
-    protected function _addForm($sUrl, $aAction, $sHtml = '')
+    protected function _addForm(string $sUrl, string $sAction, string $sHtml = ''): string
     {
         return '
 			<form action="' . $sUrl . '" method="POST" style="float: left;">
-			<input type="hidden" name="action" value="' . $aAction . '">
-			' . ($sHtml ? $sHtml : '<button>' . $aAction . '</button>') . '
+			<input type="hidden" name="action" value="' . $sAction . '">
+			' . ($sHtml ? $sHtml : '<button>' . $sAction . '</button>') . '
 		</form>';
     }
 
@@ -92,7 +93,7 @@ class AhCacheAdmin extends AhCache
      *                         - module  - active module
      * @return string
      */
-    public function renderModuleList($aOptions = [])
+    public function renderModuleList(array $aOptions = []): string
     {
         if (!$this->_isEnabled()) {
             return 'Admin is disabled.';
@@ -126,7 +127,7 @@ class AhCacheAdmin extends AhCache
      *                         - module  - active module
      * @return string
      */
-    public function renderModuleItems($aOptions = [])
+    public function renderModuleItems(array $aOptions = []): string
     {
         if (!$this->_isEnabled()) {
             return '';
@@ -134,7 +135,7 @@ class AhCacheAdmin extends AhCache
         $sReturn = '';
         $bHasOutdated = false;
         $iSize = 0;
-        $aItems = $this->getCachedItems([]);
+        $aItems = $this->getCachedItems();
         // echo '<pre>'.print_r($aItems, 1).'</pre>';
         if (count($aItems)) {
             $sReturn .= ''
