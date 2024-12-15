@@ -2,7 +2,7 @@
 
 ### 2024
 
-#### 2024-12-13  2.13
+#### 2024-12-15  2.13
 
 - compatible to PHP 8.4
 - update docs to be rendered with daux

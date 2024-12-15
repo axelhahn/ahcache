@@ -1,6 +1,7 @@
 ## Features
 
-* Fast filebased local cache
+* Storing as file is fast
+* you can cache all serializable items: strings, arrays, objects
 * cache items are initialized with any application and an id to make it unique and to separate all cache items by an application or task
 * invalidate your cache with different methods:
   * by a TTL vlue in seconds
