@@ -60,11 +60,11 @@
  * 2023-06-02  2.10  shorten code: defaults using ??; short array syntax
  * 2023-11-20  2.11  check data subkey before writing
  * 2024-07-22  2.12  WIP: add type declarations for PHP 8
- * 2024-12-13  2.13  compatibel to PHP 8.4
+ * 2024-12-15  2.13  compatible to PHP 8.4
  * --------------------------------------------------------------------------------<br>
  * compatible to PHP 8 ... 8.4<br>
  * --------------------------------------------------------------------------------<br>
- * @version 2.13
+ * @version 2.15
  * @author Axel Hahn
  * @link https://www.axel-hahn.de/docs/ahcache/index.htm
  * @license GPL
@@ -174,7 +174,7 @@ class AhCache
      * - load custom config from cache.class_config.php 
      * - set a cache
      * - set remove file (if does not exist)
-     * directory
+     *
      * @return bool
      */
     private function _setup(): bool
@@ -582,9 +582,9 @@ class AhCache
      * public function getRefFile() - get reference file that invalidates the
      * cache item
      * @since 2.8
-     * @return     int  get ttl of cache
+     * @return  string  filename of reference file
      */
-    public function getRefFile(): int
+    public function getRefFile(): string
     {
         return $this->_sRefFile;
     }
@@ -845,6 +845,7 @@ class AhCache
      * Write data into a cache. 
      * - data can be any serializable type, like string, array or object
      * - set ttl in s (from now); optional parameter
+     * 
      * @param      mixed     $data      data to store in cache
      * @param      null|int  $iTtl      optional: time in s when content cache expires; default: null
      * @param      string    $sRefFile  optional: set a reference file that invalidates the cache if it is newer
